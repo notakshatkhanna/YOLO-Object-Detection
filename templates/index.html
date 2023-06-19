@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Object Detection App</title>
+</head>
+
+<body>
+    <h1>Object Detection App</h1>
+    <form action="{{ url_for('predict') }}" method="post" enctype="multipart/form-data">
+        <input type="radio" id="webcam" name="source" value="webcam">
+        <label for="webcam">Use Webcam</label>
+        <input type="radio" id="upload" name="source" value="upload" checked>
+        <label for="upload">Upload Image</label><br><br>
+        <input type="file" name="image"><br><br>
+        <input type="submit" value="Predict">
+    </form>
+</body>
+
+</html>

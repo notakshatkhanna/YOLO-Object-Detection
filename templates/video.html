@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Object Detection on Webcam Stream</title>
+</head>
+
+<body>
+    <h1>Object Detection on Webcam Stream</h1>
+
+    <div>
+        <video id="video" width="640" height="480" autoplay></video>
+    </div>
+
+    <canvas id="canvas" width="640" height="480"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.13.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/yolo@3.0.0"></script>
+    <script type="text/javascript">
+
+        // Load the YOLOv5 model
+        async function loadModel() {
+            const model = await tf.loadGraphModel('/static/model/model.json');
+            return new tmImage.ObjectDetection(model);
+        }
+
+        // Initialize the webcam stream and start detecting objects in real-time
+        async function startDetection() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            const detection = await loadModel();
+
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                    video.srcObject = stream;
+                })
+                .catch(function (err) {
+                    console.log("An error occurred: " + err);
+                });
+
+            video.addEventListener('loadeddata', async () => {
+                await detection.detect(video).then(predictions => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    for (let i = 0; i < predictions.length; i++) {
+                        const prediction = predictions[i];
+                        const [x, y, w, h] = prediction.bbox;
+                        const label = prediction.class;
+                        const score = prediction.score;
+
+                        // Draw the bounding box
+                        ctx.strokeStyle = '#00FFFF';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(x, y, w, h);
+
+                        // Draw the label and score
+                        ctx.font = '16px Arial';
+                        ctx.fillStyle = '#00FFFF';
+                        ctx.fillText(label + ' ' + score.toFixed(2), x, y - 5);
+                    }
+                });
+            });
+        }
+
+        startDetection();
+
+    </script>
+</body>
+
+</html>
